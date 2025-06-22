@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>視差確認喚呼 意識力測定ゲーム</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 600px;
+            width: 100%;
+            min-height: 500px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.2em;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .symbol-display {
+            font-size: 8em;
+            margin: 40px 0;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .question {
+            font-size: 1.5em;
+            margin: 30px 0;
+            color: #444;
+            font-weight: 600;
+        }
+        
+        .choices {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 30px 0;
+        }
+        
+        .choice-btn {
+            padding: 20px;
+            font-size: 1.2em;
+            border: 2px solid #ddd;
+            border-radius: 15px;
+            background: linear-gradient(145deg, #f0f0f0, #e0e0e0);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+        
+        .choice-btn:hover {
+            border-color: #667eea;
+            background: linear-gradient(145deg, #667eea, #764ba2);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .start-btn, .next-btn {
+            padding: 15px 40px;
+            font-size: 1.3em;
+            background: linear-gradient(145deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            margin: 20px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .start-btn:hover, .next-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+        
+        .progress {
+            background: #e0e0e0;
+            border-radius: 10px;
+            height: 20px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            height: 100%;
+            transition: width 0.5s ease;
+            border-radius: 10px;
+        }
+        
+        .score {
+            font-size: 1.5em;
+            margin: 20px 0;
+            color: #333;
+            font-weight: bold;
+        }
+        
+        .result {
+            background: linear-gradient(145deg, #f8f9ff, #e8ecff);
+            padding: 30px;
+            border-radius: 15px;
+            margin: 20px 0;
+            border: 2px solid #667eea;
+        }
+        
+        .phase-info {
+            background: linear-gradient(145deg, #fff3cd, #ffeaa7);
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            border: 2px solid #f39c12;
+            font-size: 1.2em;
+            font-weight: 600;
+        }
+        
+        .preparation {
+            background: linear-gradient(145deg, #d4edda, #c3e6cb);
+            padding: 30px;
+            border-radius: 15px;
+            margin: 20px 0;
+            border: 2px solid #28a745;
+        }
+        
+        .preparation h2 {
+            color: #155724;
+            margin-bottom: 20px;
+        }
+        
+        .preparation p {
+            font-size: 1.2em;
+            color: #155724;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="start-screen">
+            <h1>🎯 視差確認喚呼 意識力測定ゲーム</h1>
+            <p style="font-size: 1.2em; color: #666; line-height: 1.6;">
+                このゲームでは、視差確認喚呼の有無による意識力の違いを測定します。<br>
+                記号と色を覚えて、2つ前の問題について答えてください。<br>
+                まずは視差確認喚呼なしでプレイし、その後ありでプレイします。
+            </p>
+            <button class="start-btn" onclick="startPhase1()">開始</button>
+        </div>
+
+        <div id="phase1-info" style="display: none;">
+            <h1>第1段階: 視差確認喚呼なし</h1>
+            <div class="phase-info">
+                <p>まずは通常通り、記号と色を見て覚えてください。<br>
+                2つ前に表示された記号と色を選択してください。</p>
+            </div>
+            <button class="start-btn" onclick="startGame(false)">第1段階開始</button>
+        </div>
+
+        <div id="preparation-screen" style="display: none;">
+            <h1>第2段階: 視差確認喚呼あり</h1>
+            <div class="preparation">
+                <h2>📢 重要な指示</h2>
+                <p>ではこの後は記号と色を視差確認喚呼してください</p>
+                <p>表示された記号と色を声に出して確認してから、2つ前の問題を答えてください。</p>
+                <p><strong>例:</strong> 「赤い○」「青い△」のように声に出してください。</p>
+                <p style="font-size: 1.3em; color: #d63384; font-weight: bold;">準備はいいですか？</p>
+            </div>
+            <button class="start-btn" onclick="startGame(true)">第2段階開始</button>
+        </div>
+
+        <div id="game-screen" style="display: none;">
+            <div class="progress">
+                <div id="progress-fill" class="progress-fill" style="width: 0%"></div>
+            </div>
+            <div id="progress-text" class="score">問題 1/12</div>
+            
+            <div id="current-display">
+                <div id="symbol-display" class="symbol-display">●</div>
+                <div id="question" class="question">記号と色を覚えてください</div>
+            </div>
+            
+            <div id="answer-section" style="display: none;">
+                <div class="question">上記を覚えながら、2つ前に表示された記号と色を選択してください</div>
+                <div class="choices" id="choices"></div>
+            </div>
+            
+            <button id="next-btn" class="next-btn" onclick="nextQuestion()" style="display: none;">次へ</button>
+        </div>
+
+        <div id="result-screen" style="display: none;">
+            <h1>結果発表</h1>
+            <div id="results"></div>
+            <button class="start-btn" onclick="restart()">もう一度プレイ</button>
+        </div>
+    </div>
+
+    <script>
+        const symbols = ['●', '■', '▲', '♦'];
+        const colors = ['red', 'blue', 'green', 'purple'];
+        const colorNames = ['赤', '青', '緑', '紫'];
+        
+        let currentPhase = 1;
+        let questionHistory = [];
+        let currentQuestion = 0;
+        let scores = {phase1: 0, phase2: 0};
+        let isShisaMode = false;
+        let showingDisplay = true;
+        
+        function startPhase1() {
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('phase1-info').style.display = 'block';
+        }
+        
+        function showPreparation() {
+            document.getElementById('game-screen').style.display = 'none';
+            document.getElementById('preparation-screen').style.display = 'block';
+        }
+        
+        function startGame(shisaMode) {
+            isShisaMode = shisaMode;
+            currentQuestion = 0;
+            questionHistory = [];
+            
+            if (shisaMode) {
+                document.getElementById('preparation-screen').style.display = 'none';
+            } else {
+                document.getElementById('phase1-info').style.display = 'none';
+            }
+            
+            document.getElementById('game-screen').style.display = 'block';
+            generateNextQuestion();
+        }
+        
+        function generateNextQuestion() {
+            if (currentQuestion >= 12) {
+                endPhase();
+                return;
+            }
+            
+            currentQuestion++;
+            showingDisplay = true;
+            
+            const symbol = symbols[Math.floor(Math.random() * symbols.length)];
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            
+            questionHistory.push({symbol, color});
+            
+            document.getElementById('progress-fill').style.width = (currentQuestion / 12) * 100 + '%';
+            document.getElementById('progress-text').textContent = `問題 ${currentQuestion}/12`;
+            
+            document.getElementById('symbol-display').textContent = symbol;
+            document.getElementById('symbol-display').style.color = color;
+            
+            document.getElementById('current-display').style.display = 'block';
+            document.getElementById('answer-section').style.display = 'none';
+            document.getElementById('next-btn').style.display = 'none';
+            
+            if (currentQuestion <= 2) {
+                document.getElementById('question').textContent = isShisaMode ? 
+                    '記号と色を声に出して確認してください' : '記号と色を覚えてください';
+                document.getElementById('next-btn').style.display = 'block';
+            } else {
+                document.getElementById('question').textContent = isShisaMode ? 
+                    '記号と色を声に出して確認してください' : '記号と色を覚えてください';
+                
+                // 問題と解答を同時に表示
+                showAnswerSection();
+            }
+        }
+        
+        function showAnswerSection() {
+            if (currentQuestion <= 2) return;
+            
+            // 現在の問題表示はそのまま残す
+            document.getElementById('current-display').style.display = 'block';
+            document.getElementById('answer-section').style.display = 'block';
+            
+            generateChoices();
+        }
+        
+        function generateChoices() {
+            const correctAnswer = questionHistory[currentQuestion - 3];
+            const choices = [];
+            
+            // 正解を追加
+            choices.push({
+                symbol: correctAnswer.symbol,
+                color: correctAnswer.color,
+                correct: true
+            });
+            
+            // 不正解を3つ追加
+            while (choices.length < 4) {
+                const symbol = symbols[Math.floor(Math.random() * symbols.length)];
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                
+                // 既に存在する選択肢と重複しないかチェック
+                if (!choices.some(choice => choice.symbol === symbol && choice.color === color)) {
+                    choices.push({symbol, color, correct: false});
+                }
+            }
+            
+            // シャッフル
+            for (let i = choices.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [choices[i], choices[j]] = [choices[j], choices[i]];
+            }
+            
+            const choicesContainer = document.getElementById('choices');
+            choicesContainer.innerHTML = '';
+            
+            choices.forEach((choice, index) => {
+                const button = document.createElement('button');
+                button.className = 'choice-btn';
+                button.innerHTML = `<span style="color: ${choice.color}; font-size: 1.5em;">${choice.symbol}</span><br>
+                                   ${colorNames[colors.indexOf(choice.color)]}の${choice.symbol}`;
+                button.onclick = () => selectAnswer(choice.correct, button);
+                choicesContainer.appendChild(button);
+            });
+        }
+        
+        function selectAnswer(correct, selectedButton) {
+            if (correct) {
+                if (currentPhase === 1) {
+                    scores.phase1++;
+                } else {
+                    scores.phase2++;
+                }
+            }
+            
+            // 全ての選択肢を無効化
+            const choices = document.querySelectorAll('.choice-btn');
+            choices.forEach(btn => {
+                btn.style.pointerEvents = 'none';
+                if (btn.onclick.toString().includes('true')) {
+                    btn.style.background = 'linear-gradient(145deg, #28a745, #20c997)';
+                    btn.style.color = 'white';
+                }
+            });
+            
+            // 選択したボタンにのみ正解・不正解の表示を追加
+            const resultSpan = document.createElement('span');
+            resultSpan.style.cssText = `
+                display: block;
+                font-size: 1.2em;
+                font-weight: bold;
+                margin-top: 10px;
+                animation: fadeIn 0.5s ease;
+            `;
+            
+            if (correct) {
+                resultSpan.textContent = '✅ 正解！';
+                resultSpan.style.color = '#28a745';
+            } else {
+                resultSpan.textContent = '❌ 不正解';
+                resultSpan.style.color = '#dc3545';
+            }
+            
+            selectedButton.appendChild(resultSpan);
+            
+            setTimeout(() => {
+                generateNextQuestion();
+            }, 2000);
+        }
+        
+        function nextQuestion() {
+            if (showingDisplay && currentQuestion <= 2) {
+                setTimeout(() => {
+                    generateNextQuestion();
+                }, 500);
+            }
+        }
+        
+        function endPhase() {
+            if (currentPhase === 1) {
+                currentPhase = 2;
+                showPreparation();
+            } else {
+                showResults();
+            }
+        }
+        
+        function showResults() {
+            document.getElementById('game-screen').style.display = 'none';
+            document.getElementById('result-screen').style.display = 'block';
+            
+            const phase1Accuracy = Math.round((scores.phase1 / 10) * 100);
+            const phase2Accuracy = Math.round((scores.phase2 / 10) * 100);
+            const improvement = phase2Accuracy - phase1Accuracy;
+            
+            let resultHTML = `
+                <div class="result">
+                    <h2>📊 結果比較</h2>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 20px 0;">
+                        <div style="text-align: center;">
+                            <h3>視差確認喚呼なし</h3>
+                            <div class="score" style="font-size: 2em; color: #666;">${phase1Accuracy}%</div>
+                            <p>正解数: ${scores.phase1}/10</p>
+                        </div>
+                        <div style="text-align: center;">
+                            <h3>視差確認喚呼あり</h3>
+                            <div class="score" style="font-size: 2em; color: #667eea;">${phase2Accuracy}%</div>
+                            <p>正解数: ${scores.phase2}/10</p>
+                        </div>
+                    </div>
+                    <div style="text-align: center; margin-top: 20px;">
+                        <h3>意識力の変化</h3>
+                        <div class="score" style="font-size: 1.8em; color: ${improvement >= 0 ? '#28a745' : '#dc3545'};">
+                            ${improvement >= 0 ? '+' : ''}${improvement}%
+                        </div>
+                        <p style="font-size: 1.1em; color: #666;">
+                            ${improvement > 0 ? '視差確認喚呼により意識力が向上しました！' : 
+                              improvement === 0 ? '視差確認喚呼による変化はありませんでした。' : 
+                              '今回は視差確認喚呼による向上は見られませんでした。'}
+                        </p>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('results').innerHTML = resultHTML;
+        }
+        
+        function restart() {
+            currentPhase = 1;
+            scores = {phase1: 0, phase2: 0};
+            document.getElementById('result-screen').style.display = 'none';
+            document.getElementById('start-screen').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
